@@ -1,3 +1,6 @@
+// 1.create an api fetch a single document by id.
+// 2.upload file using postman. Validate it by checking the size of the file and the extension. size should not be more than 1mb and extension should be only pdf.
+
 var express = require('express');
 const app= express();
 const mongoose=require('mongoose');
