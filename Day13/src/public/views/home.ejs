@@ -1,11 +1,11 @@
-<body style="align-content: center;">
+<body style="text-align: center;">
     <h1>Travel Blogger</h1>
 
 <% data.map((item)=> {%>
     <!-- <%=item._id %> -->
     <br/><img src="<%=item.image %>" alt="image"><br/>
     <%=item.content %><br /><br/>
-    <input type="text"/>Leave your comment here.........<br/><br/>
+    <input type="text" disabled="true"/>Leave your comment here.........<br/><br/>
 <% })%>
 
 </body>
