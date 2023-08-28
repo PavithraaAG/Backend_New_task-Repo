@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+</head>
+<body>
+  <h1>Welcome to the Admin Dashboard</h1>
+  
+  <ul>
+    <% data.forEach((blog) => { %>
+      <li><%= blog.title %> (<a href="/editblog/<%=blog._id %>">Edit</a> | <a href="/deleteblog/<%= blog._id %>">Delete</a>)</li>
+    <% }); %>
+  </ul>
+  
+  <a href="/addblog">Add Blog</a>
+</body>
+</html>

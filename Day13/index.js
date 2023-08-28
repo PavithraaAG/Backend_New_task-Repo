@@ -1,72 +1,153 @@
 const express = require('express');
 const path = require('path');
-const bodyParser = require("body-parser");
+const bodyParser = require('body-parser');
 const app = express();
-const MongoClient = require("mongodb").MongoClient
-const ObjectId = require("mongodb").ObjectId
-const multer = require('multer')
-const client = new MongoClient("mongodb://0.0.0.0:27017/mydb");
-client.connect()
-  .then(() => {
-    console.log("connected");
-  })
+const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectId;
+const client = new MongoClient('mongodb://0.0.0.0:27017/mydb');
 
-
+client.connect().then(() => {
+  console.log('Connected to MongoDB');
+});
 
 app.set('view engine', 'ejs');
-app.set("views", path.join(__dirname, '/src/public/', 'views'));
-
+app.set('views', path.join(__dirname, '/src/public/', 'views'));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-const db = client.db("mydb");
-var coll2 = db.collection("user");
-var coll1 = db.collection("blogs");
-app.get("/home", (req, res) => {
+const db = client.db('mydb');
+const userCollection = db.collection('user');
+const blogCollection = db.collection('blogs');
 
-  coll1.find({}).toArray()
+
+app.get('/', (req, res) => {
+  blogCollection
+    .find({})
+    .toArray()
     .then((data) => {
-      res.render("home", { data: data })
-    }).catch((err) => {
-      console.log(err)
+      res.render('home', { data });
+    })
+    .catch((err) => {
+      console.log(err);
     });
 });
-app.get("/", (req, res) => {
-  res.render("page")
-})
 
-app.get("/signin", (req, res) => {
-  res.render("signin")
-})
-app.post('/signin_save', (req, res) => {
-  const obj = { name: req.body.username, password: req.body.password }
-  coll2.find(obj).toArray()
-    .then((data) => {
-      res.redirect("/home")
-    }).catch((err) => {
-      res.redirect("/signup")
-      console.log(err)
+
+app.get('/signin', (req, res) => {
+  res.render('signin');
+});
+
+
+app.post('/signin', (req, res) => {
+  const { username, password } = req.body;
+  userCollection
+    .findOne({ username, password }) 
+    .then((user) => {
+      if (user) {
+        res.redirect('/admin');
+      } else {
+        res.redirect('/signup');
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.redirect('/signin');
     });
 });
-app.get("/signup", (req, res) => {
-  res.render("signup")
-})
-app.post('/signup_save', (req, res) => {
 
-  const users = { name: req.body.username, password: req.body.password }
-  coll2.insertOne(users)
+
+app.get('/signup', (req, res) => {
+  res.render('signup');
+});
+
+
+app.post('/signup', (req, res) => {
+  const { username, password } = req.body;
+  userCollection
+    .insertOne({ username, password }) 
     .then(() => {
-      res.redirect("/")
-    }).catch((err) => {
-      console.log(err)
+      res.redirect('/signin');
+    })
+    .catch((err) => {
+      console.error(err);
+      res.redirect('/signup');
+    });
+});
+
+
+app.get('/admin', (req, res) => {
+  blogCollection
+    .find({})
+    .toArray()
+    .then((data) => {
+      res.render('admin', { data });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
+
+app.get('/addblog', (req, res) => {
+  res.render('addblog');
+});
+
+
+app.post('/addblog', (req, res) => {
+  const { title, content} = req.body;
+  blogCollection
+    .insertOne({ title, content })
+    .then(() => {
+      res.redirect('/admin');
+    })
+    .catch((err) => {
+      console.error(err);
+      res.redirect('/addblog');
+    });
+});
+
+
+app.get('/editblog/:id', (req, res) => {
+  const id = req.params.id;
+  blogCollection
+    .find({ _id: new ObjectId(id) }).toArray()
+    .then((blog) => {
+      res.render('editblog', { blog });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.redirect('/admin');
+    });
+});
+
+
+app.post('/updateblog', (req, res) => {
+  const id = req.body.id;
+  const { title, content } = req.body;
+  blogCollection
+    .updateOne({ _id:new ObjectId(id) }, { $set: { title, content } })
+    .then(() => {
+      res.redirect('/admin');
     })
 });
 
 
+app.get('/deleteblog/:id', (req, res) => {
+  const id = req.params.id;
 
-// app.use(express.json());
+  var o_id=new ObjectId(id);
+  blogCollection
+    .deleteOne({ _id:(o_id) })
+    .then(() => {
+      res.redirect('/admin');
+    })
+    .catch((err) => {
+      console.error(err);
+      res.redirect('/admin');
+    });
+});
 
 
-app.listen(8000, () => {
-  console.log('listening on')
-})
+app.listen(8080, () => {
+  console.log('Listening on port 8080');
+});

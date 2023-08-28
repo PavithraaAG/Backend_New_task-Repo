@@ -1,11 +1,21 @@
-<body style="text-align: center;">
-    <h1>Travel Blogger</h1>
-
-<% data.map((item)=> {%>
-    <!-- <%=item._id %> -->
-    <br/><img src="<%=item.image %>" alt="image"><br/>
-    <%=item.content %><br /><br/>
-    <input type="text" disabled="true"/>Leave your comment here.........<br/><br/>
-<% })%>
-
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Home Page</title>
+</head>
+<body>
+  <h1>Welcome to the Blog App</h1>
+  <a href="/signin">Admin Login</a>
+  <ul>
+    <% data.forEach((blog) => { %>
+      <h1><%= blog.title %></h1>
+      <p><%= blog.content%></p>
+      <!-- <textarea id="" placeholder="Leave your comment here....."></textarea>
+      <button type="submit">Submit</button> -->
+      
+    <% }); %>
+  </ul>
+  
+  
 </body>
+</html>
