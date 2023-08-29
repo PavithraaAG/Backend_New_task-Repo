@@ -25,9 +25,11 @@ const multerStorage=multer.diskStorage({
     }
     else if (path.extname(file.originalname)==='.jpeg'){
       cb(new Error("invalid file",false))
+      alert("only png files are allowed")
     }
     else if (path.extname(file.originalname)==='.jpg'){
       cb(new Error("invalid file",false))
+      alert("only png files are allowed")
     }
     
   },
@@ -65,7 +67,7 @@ app.post('/signin', (req, res) => {
     .findOne({ username, password }) 
     .then((user) => {
       if (user) {
-        res.redirect('/');
+        res.redirect('/admin');
       } else {
         res.redirect('/signup');
       }
