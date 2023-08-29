@@ -113,18 +113,7 @@ app.get('/addblog', (req, res) => {
   res.render('addblog');
 });
 
-// app.post("/upload",upload.single("myfile"),(req,res)=>{
-//     console.log(req.file)
-//     coll.insertOne({files:req.file})
-//       .then(() => {
-//         console.log("inserted successfully")
-//       })
-//       .catch((err) => {
-//         console.log(err);
-//         res.status(500).send("Internal Server Error");
-//       });
-//     res.send("File uploaded")
-//   })
+
 app.post('/addblog',upload.single("file"), (req, res) => {
   const { title, content} = req.body;
   const image=req.file.originalname;
