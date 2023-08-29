@@ -5,16 +5,37 @@ const app = express();
 const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const client = new MongoClient('mongodb://0.0.0.0:27017/mydb');
+const multer=require('multer');
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, '/src/public/', 'views'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 client.connect().then(() => {
   console.log('Connected to MongoDB');
 });
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '/src/public/', 'views'));
+app.use(express.static('src/public/uploadfolder'));
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const multerStorage=multer.diskStorage({
+  destination:(req,file,cb)=>{
+    if (path.extname(file.originalname)==='.png') {
+      console.log(file.originalname);
+      cb(null, path.join(__dirname+'/src/public','uploadfolder'));
+    }
+    else if (path.extname(file.originalname)==='.jpeg'){
+      cb(new Error("invalid file",false))
+    }
+    else if (path.extname(file.originalname)==='.jpg'){
+      cb(new Error("invalid file",false))
+    }
+    
+  },
+  filename:(req,file,cb)=>{
+    cb(null,`${file.originalname}`);
+  }
+});
+const upload=multer({storage:multerStorage})
 const db = client.db('mydb');
 const userCollection = db.collection('user');
 const blogCollection = db.collection('blogs');
@@ -44,7 +65,7 @@ app.post('/signin', (req, res) => {
     .findOne({ username, password }) 
     .then((user) => {
       if (user) {
-        res.redirect('/admin');
+        res.redirect('/');
       } else {
         res.redirect('/signup');
       }
@@ -92,11 +113,24 @@ app.get('/addblog', (req, res) => {
   res.render('addblog');
 });
 
-
-app.post('/addblog', (req, res) => {
+// app.post("/upload",upload.single("myfile"),(req,res)=>{
+//     console.log(req.file)
+//     coll.insertOne({files:req.file})
+//       .then(() => {
+//         console.log("inserted successfully")
+//       })
+//       .catch((err) => {
+//         console.log(err);
+//         res.status(500).send("Internal Server Error");
+//       });
+//     res.send("File uploaded")
+//   })
+app.post('/addblog',upload.single("file"), (req, res) => {
   const { title, content} = req.body;
+  const image=req.file.originalname;
+  console.log(image)
   blogCollection
-    .insertOne({ title, content })
+    .insertOne({ title, content, image })
     .then(() => {
       res.redirect('/admin');
     })
@@ -107,7 +141,7 @@ app.post('/addblog', (req, res) => {
 });
 
 
-app.get('/editblog/:id', (req, res) => {
+app.get('/editblog/:id',(req, res) => {
   const id = req.params.id;
   blogCollection
     .find({ _id: new ObjectId(id) }).toArray()
@@ -121,11 +155,12 @@ app.get('/editblog/:id', (req, res) => {
 });
 
 
-app.post('/updateblog', (req, res) => {
+app.post('/updateblog',upload.single("file"),(req, res) => {
   const id = req.body.id;
   const { title, content } = req.body;
+  const image=req.file.originalname;
   blogCollection
-    .updateOne({ _id:new ObjectId(id) }, { $set: { title, content } })
+    .updateOne({ _id:new ObjectId(id) }, { $set: { title, content, image} })
     .then(() => {
       res.redirect('/admin');
     })
